@@ -1,5 +1,3 @@
 #  Resume-Analyzer 
 
-## About Project
-### Description
-### Features
+## Coming Soon...
