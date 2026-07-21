@@ -12,7 +12,7 @@ const HomePage = () => {
         <GlassCard className="p-8 sm:p-10">
           <div className="inline-flex items-center gap-2 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-3 py-1 text-sm font-medium text-fuchsia-600 dark:text-fuchsia-300">
             <Sparkles size={16} />
-            Premium AI resume intelligence
+            Premium AI Resume Intelligence
           </div>
           <h1 className="mt-6 text-4xl font-semibold tracking-tight bg-gradient-to-r from-fuchsia-500 to-violet-500 bg-clip-text text-transparent sm:text-5xl lg:text-6xl">
             Turn every résumé into a strategic hiring advantage.
