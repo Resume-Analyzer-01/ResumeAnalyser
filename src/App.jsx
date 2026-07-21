@@ -5,6 +5,7 @@ import { LoadingState } from './components/shared/LoadingState'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { ToastProvider } from './contexts/ToastContext'
 import { AuthProvider } from './contexts/AuthContext'
+import { NotificationProvider } from './contexts/NotificationContext'
 
 const HomePage = lazy(() => import('./pages/Home'))
 const LoginPage = lazy(() => import('./pages/Login'))
@@ -32,34 +33,36 @@ function App() {
     <ThemeProvider>
       <ToastProvider>
         <AuthProvider>
-          <BrowserRouter>
-          <Suspense fallback={<LoadingState title="Loading ResumeAI" description="Preparing your workspace." />}>
-            <Routes>
-              <Route element={<MainLayout />}>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/features" element={<FeaturesPage />} />
-                <Route path="/pricing" element={<PricingPage />} />
-                <Route path="/templates" element={<TemplatesPage />} />
-                <Route path="/contact" element={<ContactPage />} />
-                <Route path="/faq" element={<FAQPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                <Route path="/verify-otp" element={<VerifyOTPPage />} />
-                <Route path="/reset-password" element={<ResetPasswordPage />} />
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/upload" element={<UploadResumePage />} />
-                <Route path="/uploadpage" element={<UploadPage />} />
-                <Route path="/analysis" element={<ReportsPage />} />
-                <Route path="/analysis/:id" element={<ResumeAnalysisPage />} />
-                <Route path="/history" element={<ResumeHistoryPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="*" element={<NotFoundPage />} />
-              </Route>
-            </Routes>
-          </Suspense>
-          </BrowserRouter>
+          <NotificationProvider>
+            <BrowserRouter>
+            <Suspense fallback={<LoadingState title="Loading ResumeAI" description="Preparing your workspace." />}>
+              <Routes>
+                <Route element={<MainLayout />}>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/features" element={<FeaturesPage />} />
+                  <Route path="/pricing" element={<PricingPage />} />
+                  <Route path="/templates" element={<TemplatesPage />} />
+                  <Route path="/contact" element={<ContactPage />} />
+                  <Route path="/faq" element={<FAQPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                  <Route path="/verify-otp" element={<VerifyOTPPage />} />
+                  <Route path="/reset-password" element={<ResetPasswordPage />} />
+                  <Route path="/dashboard" element={<DashboardPage />} />
+                  <Route path="/upload" element={<UploadResumePage />} />
+                  <Route path="/uploadpage" element={<UploadPage />} />
+                  <Route path="/analysis" element={<ReportsPage />} />
+                  <Route path="/analysis/:id" element={<ResumeAnalysisPage />} />
+                  <Route path="/history" element={<ResumeHistoryPage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="*" element={<NotFoundPage />} />
+                </Route>
+              </Routes>
+            </Suspense>
+            </BrowserRouter>
+          </NotificationProvider>
         </AuthProvider>
       </ToastProvider>
     </ThemeProvider>

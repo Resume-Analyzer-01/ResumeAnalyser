@@ -22,6 +22,8 @@ import { useTheme } from '../../hooks/useTheme'
 import { Avatar } from '../ui/Avatar'
 import { Modal } from '../ui/Modal'
 import { useAuth } from '../../contexts/AuthContext'
+import { useNotifications } from '../../contexts/NotificationContext'
+import { NotificationDropdown } from './NotificationDropdown'
 
 const navLinks = [
   { label: 'Home', to: '/' },
@@ -198,11 +200,13 @@ const ProfileDropdown = ({ closeMobileMenu }) => {
 export const Navbar = () => {
   const { theme, toggleTheme } = useTheme()
   const { user } = useAuth()
+  const { unreadCount } = useNotifications()
   const location = useLocation()
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [notificationOpen, setNotificationOpen] = useState(false)
 
   const searchEntries = [
     { name: 'Home Landing Page', path: '/' },
@@ -233,6 +237,7 @@ export const Navbar = () => {
 
   useEffect(() => {
     setMobileOpen(false)
+    setNotificationOpen(false)
   }, [location.pathname])
 
   useEffect(() => {
@@ -312,10 +317,30 @@ export const Navbar = () => {
           >
             {theme === 'dark' ? <SunMedium size={16} /> : <Moon size={16} />}
           </motion.button>
-          <motion.button type="button" aria-label="Notifications" whileHover={{ y: -2 }} whileTap={{ scale: 0.96 }} className={iconButtonClass}>
-            <Bell size={16} />
-            <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-400 dark:border-slate-950" />
-          </motion.button>
+          <div className="relative">
+            <motion.button
+              type="button"
+              aria-label="Notifications"
+              onClick={() => setNotificationOpen((value) => !value)}
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.96 }}
+              className={iconButtonClass}
+            >
+              <Bell size={16} />
+              {unreadCount > 0 ? (
+                <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-cyan-500 px-1 text-[10px] font-bold text-white shadow-sm shadow-cyan-500/50">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              ) : (
+                <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-slate-300 dark:bg-slate-700" />
+              )}
+            </motion.button>
+
+            <NotificationDropdown
+              isOpen={notificationOpen}
+              onClose={() => setNotificationOpen(false)}
+            />
+          </div>
           {!user ? (
             <>
               <Link to="/login" className={textButtonClass}>
@@ -439,10 +464,23 @@ export const Navbar = () => {
 
               <div className="mt-4 border-t border-slate-200/70 pt-4 dark:border-white/10">
                 <div className="mb-3 grid grid-cols-3 gap-2">
-                  <button type="button" aria-label="Notifications" className={iconButtonClass}>
-                    <Bell size={16} />
-                    <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-400 dark:border-slate-950" />
-                  </button>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      aria-label="Notifications"
+                      onClick={() => setNotificationOpen((value) => !value)}
+                      className={iconButtonClass}
+                    >
+                      <Bell size={16} />
+                      {unreadCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-cyan-500 px-1 text-[10px] font-bold text-white shadow-sm shadow-cyan-500/50">
+                          {unreadCount > 9 ? '9+' : unreadCount}
+                        </span>
+                      ) : (
+                        <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-slate-300 dark:bg-slate-700" />
+                      )}
+                    </button>
+                  </div>
                   <button type="button" aria-label="Toggle dark mode" onClick={toggleTheme} className={iconButtonClass}>
                     {theme === 'dark' ? <SunMedium size={16} /> : <Moon size={16} />}
                   </button>

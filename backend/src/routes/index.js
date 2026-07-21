@@ -5,6 +5,7 @@ import dashboardRoutes from './dashboardRoutes.js'
 import adminRoutes from './adminRoutes.js'
 import templateRoutes from './templateRoutes.js'
 import uploadRoutes from './uploadRoutes.js'
+import notificationRoutes from './notificationRoutes.js'
 
 const router = express.Router()
 
@@ -13,7 +14,8 @@ router.use('/resume', resumeRoutes)
 router.use('/dashboard', dashboardRoutes)
 router.use('/admin', adminRoutes)
 router.use('/templates', templateRoutes)
-
 router.use('/upload', uploadRoutes)
+router.use('/notifications', notificationRoutes)
+
 export default router
 
