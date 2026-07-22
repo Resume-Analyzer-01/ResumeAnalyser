@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { FaGithub, FaGoogle } from 'react-icons/fa6'
 import { AuthShell } from '../../components/forms/AuthShell'
@@ -20,6 +20,10 @@ const RegisterPage = () => {
 
   const { register, login } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const from = location.state?.from
+    ? `${location.state.from.pathname || ''}${location.state.from.search || ''}${location.state.from.hash || ''}`
+    : '/dashboard'
 
   const strength = useMemo(() => {
     let score = 0
@@ -47,7 +51,7 @@ const RegisterPage = () => {
         // Auto-login after successful registration
         await login(email, password)
         setStatus('success')
-        navigate('/dashboard')
+        navigate(from, { replace: true })
       } else {
         setStatus('error')
         setErrorMsg(result.message || 'Registration failed')

@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema(
     linkedin: { type: String, default: '' },
     github: { type: String, default: '' },
     portfolio: { type: String, default: '' },
+    bio: { type: String, default: '' },
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
     emailVerified: { type: Boolean, default: false },
     resetPasswordOtp: { type: String },

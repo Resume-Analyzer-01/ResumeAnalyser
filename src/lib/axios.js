@@ -5,25 +5,43 @@ const api = axios.create({
   withCredentials: true // send cookies
 })
 
-// Optional: Add interceptors here for handling 401s (e.g., token refresh)
+const shouldSkipRefresh = (request) => {
+  const url = request?.url || ''
+
+  if (request?.skipAuthRefresh) {
+    return true
+  }
+
+  return url.includes('/auth/login') ||
+    url.includes('/auth/register') ||
+    url.includes('/auth/refresh') ||
+    url.includes('/auth/session') ||
+    url.includes('/auth/forgot-password') ||
+    url.includes('/auth/verify-otp') ||
+    url.includes('/auth/reset-password')
+}
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config
     
     // If error is 401 and we haven't already tried to refresh
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest?._retry && !shouldSkipRefresh(originalRequest)) {
       originalRequest._retry = true
       
       try {
         // Attempt to refresh token
-        await axios.post('http://localhost:5000/api/auth/refresh', {}, { withCredentials: true })
+        const refreshResponse = await api.post('/auth/refresh', {}, { skipAuthRefresh: true })
+
+        if (!refreshResponse.data?.success) {
+          return Promise.reject(error)
+        }
+
         // If successful, retry the original request
         return api(originalRequest)
-      } catch (refreshError) {
-        // If refresh fails, we should probably log the user out
-        // AuthContext will handle state, but here we can just reject
-        return Promise.reject(refreshError)
+      } catch {
+        return Promise.reject(error)
       }
     }
     

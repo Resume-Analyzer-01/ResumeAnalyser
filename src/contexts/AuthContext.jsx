@@ -1,34 +1,92 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import api from '../lib/axios'
 
 export const AuthContext = createContext(null)
+
+let cachedSession = undefined
+let sessionRequest = null
+
+const fetchSession = async () => {
+  const response = await api.get('/auth/session', { skipAuthRefresh: true })
+  return response.data?.data || null
+}
+
+const getSession = async ({ force = false } = {}) => {
+  if (!force && cachedSession !== undefined) {
+    return cachedSession
+  }
+
+  if (!force && sessionRequest) {
+    return sessionRequest
+  }
+
+  sessionRequest = fetchSession()
+    .then((session) => {
+      cachedSession = session
+      return session
+    })
+    .finally(() => {
+      sessionRequest = null
+    })
+
+  return sessionRequest
+}
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  const checkAuth = async () => {
+  const syncSession = async ({ force = false } = {}) => {
+    const session = await getSession({ force })
+    setUser(session)
+    return session
+  }
+
+  const checkAuth = async ({ force = true } = {}) => {
+    setLoading(true)
     try {
-      const response = await api.get('/auth/profile')
-      if (response.data.success) {
-        setUser(response.data.data)
-      } else {
-        setUser(null)
-      }
-    } catch (error) {
+      return await syncSession({ force })
+    } catch {
       setUser(null)
+      cachedSession = null
+      return null
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    checkAuth()
+    let ignore = false
+
+    const hydrateSession = async () => {
+      try {
+        const session = await getSession()
+        if (!ignore) {
+          setUser(session)
+        }
+      } catch {
+        if (!ignore) {
+          setUser(null)
+          cachedSession = null
+        }
+      } finally {
+        if (!ignore) {
+          setLoading(false)
+        }
+      }
+    }
+
+    hydrateSession()
+
+    return () => {
+      ignore = true
+    }
   }, [])
 
   const login = async (email, password) => {
     const response = await api.post('/auth/login', { email, password })
     if (response.data.success) {
+      cachedSession = response.data.data.user
       setUser(response.data.data.user)
     }
     return response.data
@@ -45,12 +103,17 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Logout error:', error)
     } finally {
+      cachedSession = null
       setUser(null)
     }
   }
   
   const updateProfileLocally = (updates) => {
-    setUser(prev => ({ ...prev, ...updates }))
+    setUser((prev) => {
+      const nextUser = { ...(prev || {}), ...updates }
+      cachedSession = nextUser
+      return nextUser
+    })
   }
 
   return (

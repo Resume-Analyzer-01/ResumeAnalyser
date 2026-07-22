@@ -24,6 +24,97 @@ const cookieOptions = {
   sameSite: 'strict'
 }
 
+const getAuthHeaderToken = (req) => {
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    return req.headers.authorization.split(' ')[1]
+  }
+  return null
+}
+
+const toSafeUser = (user) => {
+  if (!user) return null
+
+  const source = typeof user.toObject === 'function' ? user.toObject() : user
+
+  return {
+    id: source._id?.toString?.() || source.id,
+    name: source.name || '',
+    email: source.email || '',
+    role: source.role || 'user',
+    avatar: source.avatar || '',
+    phone: source.phone || '',
+    linkedin: source.linkedin || '',
+    github: source.github || '',
+    portfolio: source.portfolio || '',
+    bio: source.bio || '',
+    preferences: source.preferences || { theme: 'system', language: 'en' },
+    emailVerified: Boolean(source.emailVerified),
+    createdAt: source.createdAt,
+    updatedAt: source.updatedAt
+  }
+}
+
+const applySessionCookies = (res, accessToken, refreshToken) => {
+  res.cookie('accessToken', accessToken, { ...cookieOptions, maxAge: 15 * 60 * 1000 })
+  res.cookie('refreshToken', refreshToken, { ...cookieOptions, maxAge: 7 * 24 * 3600 * 1000 })
+}
+
+const rotateRefreshSession = async (user, currentRefreshToken, res) => {
+  const tokens = generateTokens(user)
+  const expiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000)
+  const nextRefreshTokens = (user.refreshTokens || [])
+    .filter((tokenEntry) => tokenEntry.token !== currentRefreshToken)
+    .concat({ token: tokens.refreshToken, expiresAt })
+
+  await updateUserById(user._id, { refreshTokens: nextRefreshTokens })
+  applySessionCookies(res, tokens.accessToken, tokens.refreshToken)
+
+  return tokens
+}
+
+const resolveSessionUser = async (req, res) => {
+  const accessToken = getAuthHeaderToken(req) || req.cookies.accessToken
+
+  if (accessToken) {
+    try {
+      const decoded = jwt.verify(accessToken, config.jwt.accessSecret)
+      const user = await findUserById(decoded.id)
+
+      if (user) {
+        return user
+      }
+
+      return { id: decoded.id, email: decoded.email, role: decoded.role || 'user' }
+    } catch {
+      // Fall through to refresh token handling.
+    }
+  }
+
+  const refreshToken = req.cookies.refreshToken
+  if (!refreshToken) {
+    return null
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, config.jwt.refreshSecret)
+    const user = await findUserById(decoded.id)
+    if (!user) {
+      return null
+    }
+
+    const tokenExists = (user.refreshTokens || []).some((tokenEntry) => tokenEntry.token === refreshToken)
+    if (!tokenExists && mongoose.connection.readyState === 1) {
+      await updateUserById(user._id, { refreshTokens: [] })
+      return null
+    }
+
+    await rotateRefreshSession(user, refreshToken, res)
+    return user
+  } catch {
+    return null
+  }
+}
+
 export const register = async (req, res, next) => {
   const { name, email, password } = req.body
   try {
@@ -66,14 +157,13 @@ export const login = async (req, res, next) => {
     const refreshTokens = (user.refreshTokens || []).concat({ token: refreshToken, expiresAt })
     await updateUserById(user._id, { refreshTokens })
 
-    res.cookie('accessToken', accessToken, { ...cookieOptions, maxAge: 15 * 60 * 1000 })
-    res.cookie('refreshToken', refreshToken, { ...cookieOptions, maxAge: 7 * 24 * 3600 * 1000 })
+    applySessionCookies(res, accessToken, refreshToken)
 
     res.status(200).json({
       success: true,
       message: 'Access granted.',
       data: {
-        user: { id: user._id, name: user.name, email: user.email, role: user.role },
+        user: toSafeUser(user),
         accessToken
       }
     })
@@ -120,30 +210,32 @@ export const refresh = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'Compromised session. Tokens rotated.' })
     }
 
-    const tokens = generateTokens(user)
-
-    // Rotate refresh token
-    const expiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000)
-    const nextRefreshTokens = (user.refreshTokens || [])
-      .filter((t) => t.token !== token)
-      .concat({ token: tokens.refreshToken, expiresAt })
-
-    await updateUserById(user._id, { refreshTokens: nextRefreshTokens })
-
-    res.cookie('accessToken', tokens.accessToken, { ...cookieOptions, maxAge: 15 * 60 * 1000 })
-    res.cookie('refreshToken', tokens.refreshToken, { ...cookieOptions, maxAge: 7 * 24 * 3600 * 1000 })
+    const tokens = await rotateRefreshSession(user, token, res)
 
     res.status(200).json({
       success: true,
       message: 'Tokens rotated.',
       data: { accessToken: tokens.accessToken }
     })
-  } catch (error) {
+  } catch {
     res.status(401).json({ success: false, message: 'Session expired. Please log in again.' })
   }
 }
 
-export const verifyEmail = async (req, res, next) => {
+export const getSession = async (req, res, next) => {
+  try {
+    const user = await resolveSessionUser(req, res)
+
+    res.status(200).json({
+      success: true,
+      data: user ? toSafeUser(user) : null
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const verifyEmail = async (req, res) => {
   const { token } = req.query
   if (!token) {
     return res.status(400).json({ success: false, message: 'Verification token is required.' })
@@ -204,7 +296,7 @@ export const getProfile = async (req, res, next) => {
     const user = await findUserById(req.user.id)
     res.status(200).json({
       success: true,
-      data: user || req.user
+      data: toSafeUser(user || req.user)
     })
   } catch (error) {
     next(error)
@@ -213,8 +305,13 @@ export const getProfile = async (req, res, next) => {
 
 export const updateProfile = async (req, res, next) => {
   try {
-    const user = await updateUserById(req.user.id, req.body)
-    res.status(200).json({ success: true, message: 'Profile updated.', data: user })
+    const allowedUpdates = ['name', 'email', 'phone', 'linkedin', 'github', 'portfolio', 'bio', 'preferences', 'avatar']
+    const updates = Object.fromEntries(
+      Object.entries(req.body).filter(([key]) => allowedUpdates.includes(key))
+    )
+
+    const user = await updateUserById(req.user.id, updates)
+    res.status(200).json({ success: true, message: 'Profile updated.', data: toSafeUser(user) })
   } catch (error) {
     next(error)
   }
@@ -231,7 +328,7 @@ export const deleteAccount = async (req, res, next) => {
   }
 }
 
-export const oauthCallback = async (req, res, next) => {
+export const oauthCallback = async (req, res) => {
   try {
     const user = req.user
     if (!user) {
@@ -244,8 +341,7 @@ export const oauthCallback = async (req, res, next) => {
     const refreshTokens = (user.refreshTokens || []).concat({ token: refreshToken, expiresAt })
     await updateUserById(user._id, { refreshTokens })
 
-    res.cookie('accessToken', accessToken, { ...cookieOptions, maxAge: 15 * 60 * 1000 })
-    res.cookie('refreshToken', refreshToken, { ...cookieOptions, maxAge: 7 * 24 * 3600 * 1000 })
+    applySessionCookies(res, accessToken, refreshToken)
 
     // Redirect to frontend on success
     res.redirect('http://localhost:5173/')
@@ -254,4 +350,3 @@ export const oauthCallback = async (req, res, next) => {
     res.redirect('http://localhost:5173/login?error=oauth_failed')
   }
 }
-

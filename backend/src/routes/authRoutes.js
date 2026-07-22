@@ -4,6 +4,7 @@ import {
   login,
   logout,
   refresh,
+  getSession,
   verifyEmail,
   forgotPassword,
   verifyOtp,
@@ -23,6 +24,7 @@ router.post('/register', validateRegister, register)
 router.post('/login', validateLogin, login)
 router.post('/logout', protect, logout)
 router.post('/refresh', refresh)
+router.get('/session', getSession)
 router.get('/verify-email', verifyEmail)
 router.post('/forgot-password', forgotPassword)
 router.post('/verify-otp', verifyOtp)
