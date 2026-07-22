@@ -27,16 +27,20 @@ import { NotificationDropdown } from './NotificationDropdown'
 
 const navLinks = [
   { label: 'Home', to: '/' },
-  { label: 'Features', to: '/features' },
-  { label: 'Pricing', to: '/pricing' },
+  { label: 'Analyze Resume', to: '/uploadpage' },
   { label: 'Dashboard', to: '/dashboard' },
-  { label: 'Templates', to: '/templates' },
-  { label: 'Contact', to: '/contact' }
+  { label: 'Resume Builder', to: '/builder' },
+  { label: 'Job Matcher', to: '/job-matcher' },
+  { label: 'AI Coach', to: '/coaching' },
+  { label: 'Templates', to: '/templates' }
 ]
 
 const profileActions = [
+  { label: 'Analyze Resume', description: 'Instant ATS score & deep insights', icon: Sparkles, to: '/uploadpage' },
   { label: 'Dashboard', description: 'Resume command center', icon: LayoutDashboard, to: '/dashboard' },
-  { label: 'Saved Templates', description: 'Curated application formats', icon: FileText, to: '/templates' },
+  { label: 'Resume Builder', description: 'Visual A4 layout editor', icon: FileText, to: '/builder' },
+  { label: 'Job Matcher', description: 'Multi-job demand matching', icon: Sparkles, to: '/job-matcher' },
+  { label: 'AI Career Coach', description: 'Iterative score guidance', icon: Crown, to: '/coaching' },
   { label: 'Account Settings', description: 'Preferences and billing', icon: Settings, to: '/settings' }
 ]
 
@@ -209,18 +213,15 @@ export const Navbar = () => {
   const [notificationOpen, setNotificationOpen] = useState(false)
 
   const searchEntries = [
-    { name: 'Home Landing Page', path: '/' },
+    { name: 'Analyze Resume', path: '/uploadpage' },
     { name: 'Dashboard Command Center', path: '/dashboard' },
-    { name: 'Analyze New Resume', path: '/upload' },
+    { name: 'Job Matcher & Demand Heatmap', path: '/job-matcher' },
+    { name: 'AI Career Coach & Progression', path: '/coaching' },
+    { name: 'Visual A4 Resume Builder', path: '/builder' },
     { name: 'Resume Quality & Analysis Reports', path: '/analysis' },
-    { name: 'Resume Upload History & Logs', path: '/history' },
     { name: 'User Profile & Contact Info', path: '/profile' },
     { name: 'Workspace Preferences & Settings', path: '/settings' },
-    { name: 'Pricing Plans & SaaS Tiers', path: '/pricing' },
-    { name: 'Contact Sales & Customer Support', path: '/contact' },
-    { name: 'Frequently Asked Questions (FAQ)', path: '/faq' },
-    { name: 'ATS Resume Templates & Builder', path: '/templates' },
-    { name: 'Premium AI Resume Features', path: '/features' }
+    { name: 'Pricing Plans & SaaS Tiers', path: '/pricing' }
   ]
 
   const filteredEntries = searchEntries.filter((entry) =>
@@ -489,7 +490,7 @@ export const Navbar = () => {
                   </div>
                 </div>
 
-                <Link to="/upload" onClick={() => setMobileOpen(false)} className={`${ctaButtonClass} w-full px-5 text-sm`}>
+                <Link to="/uploadpage" onClick={() => setMobileOpen(false)} className={`${ctaButtonClass} w-full px-5 text-sm`}>
                   <Sparkles size={16} />
                   Analyze Resume
                 </Link>

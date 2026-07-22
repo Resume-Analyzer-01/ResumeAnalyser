@@ -756,10 +756,14 @@ const TemplatesPage = () => {
                       </div>
                     </div>
 
-                    <div className="mt-6">
-                      <Button className="w-full gap-2 px-3" onClick={() => handlePreview(template)}>
-                        <Pencil size={15} />
-                        Edit & Download
+                    <div className="mt-6 flex flex-col gap-2">
+                      <Button className="w-full gap-2 px-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-slate-950 font-bold hover:from-emerald-400 hover:to-teal-500 shadow-md" onClick={() => window.location.href = `/builder?templateId=${template.id}`}>
+                        <Sparkles size={15} />
+                        Open in Visual Builder
+                      </Button>
+                      <Button variant="secondary" className="w-full gap-2 px-3 text-xs" onClick={() => handlePreview(template)}>
+                        <Pencil size={14} />
+                        Quick Markdown Edit
                       </Button>
                     </div>
                   </div>

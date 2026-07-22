@@ -6,6 +6,9 @@ import adminRoutes from './adminRoutes.js'
 import templateRoutes from './templateRoutes.js'
 import uploadRoutes from './uploadRoutes.js'
 import notificationRoutes from './notificationRoutes.js'
+import builderRoutes from './builderRoutes.js'
+import jobRoutes from './jobRoutes.js'
+import coachingRoutes from './coachingRoutes.js'
 
 const router = express.Router()
 
@@ -16,6 +19,8 @@ router.use('/admin', adminRoutes)
 router.use('/templates', templateRoutes)
 router.use('/upload', uploadRoutes)
 router.use('/notifications', notificationRoutes)
+router.use('/resumes/builder', builderRoutes)
+router.use('/jobs', jobRoutes)
+router.use('/coaching', coachingRoutes)
 
 export default router
-

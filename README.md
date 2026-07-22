@@ -1,5 +1,5 @@
 <<<<<<< HEAD
-# React + Vite
+# React + Vite 
 This is Latest code
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.git commitgit remote -v
 
@@ -21,4 +21,3 @@ If you are developing a production application, we recommend using TypeScript wi
 
 ## Coming Soon...
 >>>>>>> bbda1fe1f10692804cc06095683dfcdd47a0f5ed
-hello Ai
