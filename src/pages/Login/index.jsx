@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { FaGithub, FaGoogle } from 'react-icons/fa6'
 import { AuthShell } from '../../components/forms/AuthShell'
@@ -17,6 +17,8 @@ const LoginPage = () => {
 
   const { login } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const redirectTo = location.state?.from || '/dashboard'
 
   const handleSubmit = async (event) => {
     event.preventDefault()
@@ -27,7 +29,7 @@ const LoginPage = () => {
       const result = await login(email, password)
       if (result.success) {
         setStatus('success')
-        navigate('/dashboard')
+        navigate(redirectTo, { replace: true })
       } else {
         setStatus('error')
         setErrorMsg(result.message || 'Login failed')

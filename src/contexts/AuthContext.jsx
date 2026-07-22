@@ -2,6 +2,19 @@ import { createContext, useContext, useState, useEffect } from 'react'
 import api from '../lib/axios'
 
 export const AuthContext = createContext(null)
+const AUTH_SESSION_HINT_KEY = 'resume-analyzer-auth-session'
+
+const persistSessionHint = () => {
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(AUTH_SESSION_HINT_KEY, '1')
+  }
+}
+
+const clearSessionHint = () => {
+  if (typeof window !== 'undefined') {
+    window.localStorage.removeItem(AUTH_SESSION_HINT_KEY)
+  }
+}
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
@@ -12,11 +25,14 @@ export const AuthProvider = ({ children }) => {
       const response = await api.get('/auth/profile')
       if (response.data.success) {
         setUser(response.data.data)
+        persistSessionHint()
       } else {
         setUser(null)
+        clearSessionHint()
       }
     } catch (error) {
       setUser(null)
+      clearSessionHint()
     } finally {
       setLoading(false)
     }
@@ -30,6 +46,7 @@ export const AuthProvider = ({ children }) => {
     const response = await api.post('/auth/login', { email, password })
     if (response.data.success) {
       setUser(response.data.data.user)
+      persistSessionHint()
     }
     return response.data
   }
@@ -46,6 +63,7 @@ export const AuthProvider = ({ children }) => {
       console.error('Logout error:', error)
     } finally {
       setUser(null)
+      clearSessionHint()
     }
   }
   

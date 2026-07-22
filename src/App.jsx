@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { MainLayout } from './components/layout/MainLayout'
 import { LoadingState } from './components/shared/LoadingState'
+import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { ToastProvider } from './contexts/ToastContext'
 import { AuthProvider } from './contexts/AuthContext'
@@ -49,14 +50,14 @@ function App() {
                   <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                   <Route path="/verify-otp" element={<VerifyOTPPage />} />
                   <Route path="/reset-password" element={<ResetPasswordPage />} />
-                  <Route path="/dashboard" element={<DashboardPage />} />
-                  <Route path="/upload" element={<UploadResumePage />} />
-                  <Route path="/uploadpage" element={<UploadPage />} />
-                  <Route path="/analysis" element={<ReportsPage />} />
-                  <Route path="/analysis/:id" element={<ResumeAnalysisPage />} />
-                  <Route path="/history" element={<ResumeHistoryPage />} />
-                  <Route path="/profile" element={<ProfilePage />} />
-                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+                  <Route path="/upload" element={<ProtectedRoute><UploadResumePage /></ProtectedRoute>} />
+                  <Route path="/uploadpage" element={<ProtectedRoute><UploadPage /></ProtectedRoute>} />
+                  <Route path="/analysis" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+                  <Route path="/analysis/:id" element={<ProtectedRoute><ResumeAnalysisPage /></ProtectedRoute>} />
+                  <Route path="/history" element={<ProtectedRoute><ResumeHistoryPage /></ProtectedRoute>} />
+                  <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                  <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
                   <Route path="*" element={<NotFoundPage />} />
                 </Route>
               </Routes>

@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 
-export const Modal = ({ isOpen, onClose, title, children, footer }) => {
+export const Modal = ({ isOpen, onClose, title, children, footer, className = '' }) => {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -15,7 +15,7 @@ export const Modal = ({ isOpen, onClose, title, children, footer }) => {
             initial={{ y: 18, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 18, opacity: 0 }}
-            className="w-full max-w-lg rounded-[24px] border border-white/15 bg-white/80 p-6 shadow-2xl backdrop-blur-2xl dark:bg-slate-900/80"
+            className={`w-full max-w-lg rounded-[24px] border border-white/15 bg-white/80 p-6 shadow-2xl backdrop-blur-2xl dark:bg-slate-900/80 ${className}`}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">
